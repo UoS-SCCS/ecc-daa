@@ -1,0 +1,32 @@
+# =============================================================================
+#  Makefile setting paths and flags for VANT_experiments test programs
+# =============================================================================
+
+UTILS_ROOT=../../../../Utilities
+DAA_ROOT=../../..
+TPM_ROOT=../..
+
+# Set paths for code files
+vpath %.cpp $(UTILS_ROOT)/common
+vpath %.cpp $(DAA_ROOT)/common
+vpath %.cpp $(TPM_ROOT)/common
+
+# Set the library & include paths
+COMMON_INCLUDE=$(UTILS_ROOT)/include
+DAA_INCLUDE=$(DAA_ROOT)/include
+TPM_INCLUDE=$(TPM_ROOT)/include
+TSS_INCLUDE=/opt/ibmtss/utils
+CPPFLAGS=-I$(COMMON_INCLUDE) -I$(DAA_INCLUDE) -I$(TPM_INCLUDE) -I$(TSS_INCLUDE)
+
+# Set generic executable flags
+LDLIBS_COMMON= -ltss
+CFLAGS_COMMON= -fpermissive
+CXXFLAGS_COMMON= -DTPM_POSIX -std=c++11 -pedantic -Wall -Wno-sign-compare \
+                 -Wno-unused-function -Wno-comment -fexceptions
+CLANG_CXXFLAGS=-Wno-extern-c-compat
+LDFLAGS_COMMON = -DTPM_POSIX -L/opt/ibmtss/utils -no-pie # added -no-pie flag for AMCL and gcc version 7.3.0 
+
+ifeq ($(CXX),clang)
+  CXXFLAGS_COMMON += $(CLANG_CXXFLAGS)
+endif
+

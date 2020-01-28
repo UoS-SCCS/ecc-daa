@@ -1,0 +1,19 @@
+# =============================================================================
+#  Makefile setting paths and flags for core test programs
+# =============================================================================
+
+UTILS_ROOT=../..
+
+# Set paths for code files
+#------------------------------------------------------------------------------
+vpath %.cpp $(UTILS_ROOT)/common
+
+# Set the library & include paths
+COMMON_INCLUDE=$(UTILS_ROOT)/include
+CPPFLAGS=-I$(COMMON_INCLUDE)
+
+# Set generic executable flags
+LDLIBS_COMMON=
+CFLAGS_COMMON=-fpermissive
+CXXFLAGS_COMMON=-std=c++11 -Wpedantic -Wall -Wno-sign-compare -Wno-unused-function -fexceptions
+LDFLAGS_COMMON= -no-pie # Added for clang, g++ compiles without
