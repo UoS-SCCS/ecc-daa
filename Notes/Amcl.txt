@@ -1,0 +1,13 @@
+AMCL downloaded from:
+   https://github.com/apache/incubator-milagro-crypto
+
+Using version3, currently in ~/AMCL/version3. For instructions about installing
+see readme.txt in the cpp folder.
+
+These instructions have been used and versions of the library (amcl.a) for the
+different processors are in folders in Amcl. For example, directory
+Amcl/cpp_x86_64 contains the files for the x86_64 processor..
+
+The Apache licence for the code is also in the Amcl directory.
+
+

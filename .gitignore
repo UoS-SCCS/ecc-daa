@@ -1,0 +1,27 @@
+# Prerequisites
+**/.d
+
+# Compiled Object files
+*.o
+
+#VS Code files
+**/.vs
+**/.vscode
+
+# Debug files
+**/gmon.out
+
+# Callgrind files
+**/callgrind*
+
+# Binaries
+**/bin
+
+Daa_code/Daa_tpm/Tpm_experiments/Provision_tpm/provision_tpm
+Daa_code/Daa_tpm/Tpm_experiments/Make_daa_credential/make_daa_credential
+Daa_code/Daa_tpm/Tpm_experiments/Daa_sign_message/daa_sign_message
+Daa_code/Daa_tpm/Tpm_experiments/Verify_daa_signature/verify_daa_signature
+Daa_code/Daa_tpm/Tpm_experiments/Daa_certify_key/daa_certify_key
+Daa_code/Daa_tpm/Tpm_experiments/Daa_quote_pcr/daa_quote_pcr
+Daa_code/Daa_tpm/Tpm_experiments/Verify_daa_attest/verify_daa_attest
+
