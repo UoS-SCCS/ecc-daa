@@ -48,7 +48,6 @@
 #include "G1_utils.h"
 #include "G2_utils.h"
 #include "Daa_credential.h"
-#include "Model_hashes.h"
 #include "Sha.h"
 #include "bnp256_param.h"
 
