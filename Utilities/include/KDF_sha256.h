@@ -54,13 +54,6 @@ uint32_t const size_in_bits,
 bool once			// If true only perform 1 iteration 
 );
 
-Byte_buffer NIST_SP108_sha256(
-Byte_buffer const& key,		// HMAC key
-Byte_buffer const& label,	// label, derved from a std::string, no null terminator
-Byte_buffer const& context,
-uint32_t const size_in_bits
-);
-
 Byte_buffer NIST_SP108_sha256_fd(
 Byte_buffer const& key,		// HMAC key
 Byte_buffer const& fixed_input,

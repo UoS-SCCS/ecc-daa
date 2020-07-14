@@ -57,7 +57,7 @@ static const Byte_buffer pcr_str("Some arbitrary data for a PCR");
 static const Byte_buffer pcr_expected(Hex_string("dec619c7fb02ea23706364c4984a00227659d413626ae7834c37cc258c1f23ef"));
 static const Byte_buffer quote_digest_expected(Hex_string("0c67da2ea50ef73874d19d3688e662abacaf20bc69f2bbc9ce2434f012d1e733"));
 
-static const uint32_t ek_persistent_handle=0x81010000;  
+static const uint32_t ek_persistent_handle=0x810100c0;  
 
 // TCG Infrastructure Work Group (IWG) default EK primary key policy
 static const unsigned char iwgPolicy[] = {
