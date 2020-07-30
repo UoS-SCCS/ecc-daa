@@ -123,7 +123,7 @@ typename Timings<Rep>::Timing_set Timings<Rep>::get_tpm_timings()
 template<typename Rep>
 void Timings<Rep>::write_tpm_timings(std::ostream& os) const
 {
-    int8_t prec=os.precision();
+    auto prec=os.precision();
     os << std::setprecision(8); // Large enough for (almost) all timings
                                         // to be output as fixed
     for(auto td : timings_)
