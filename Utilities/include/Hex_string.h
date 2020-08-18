@@ -63,8 +63,6 @@ using Byte=unsigned char;
 *
 ******************************************************************************/
 
-#pragma once
-
 class Hex_string
 {
 public:
