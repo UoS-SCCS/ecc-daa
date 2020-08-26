@@ -52,7 +52,6 @@ TPM_RC create_daa_key(
         log_ptr->os() << "create_daa_key\n";
     }
 
-	std::ostringstream oss;
 	Tpm_timer tt;
 
 	Create_In in;

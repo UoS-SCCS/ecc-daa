@@ -38,7 +38,7 @@ Daa_signature const& sig
 )
 {
     Bn_ctx_ptr ctx =new_bn_ctx();
-    Ec_group_ptr ecgrp=new_ec_group("BN_P256");
+    Ec_group_ptr ecgrp=new_ec_group("bnp256");
     if (ecgrp.get()==nullptr)
     {
         throw(Openssl_error("openssl_daa_verify: error generating the curve"));

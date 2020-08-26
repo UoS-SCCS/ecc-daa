@@ -1,6 +1,6 @@
 /******************************************************************************
-* File:        Create_primary_rsa_ek.cpp
-* Description: Create a primary RSA key in the endorsement hierarchy
+* File:        Create_primary_rsa_key.cpp
+* Description: Create a primary RSA key in the given hierarchy
 *
 * Author:      Chris Newton
 *
@@ -18,20 +18,20 @@
 #include "Tpm_defs.h"
 #include "Tpm_param.h"
 #include "Tpm_error.h"
-#include "Create_primary_rsa_ek.h"
+#include "Create_primary_rsa_key.h"
 
 // Create a primary key in the endorsement hierarchy
-TPM_RC create_primary_rsa_ek(
+TPM_RC create_primary_rsa_key(
 	TSS_CONTEXT* tss_context,
+    TPMI_RH_HIERARCHY hierarchy,
 	CreatePrimary_Out* out
 )
 {
     TPM_RC rc = 0;
-    
-    Tpm_timer tt;
-
     CreatePrimary_In in;
  
+    Tpm_timer tt;
+
     /*
     typedef struct {
         TPMI_RH_HIERARCHY           primaryHandle;
@@ -144,26 +144,36 @@ TPM_RC create_primary_rsa_ek(
         objectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
         objectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
     */
-
-    in.primaryHandle=TPM_RH_ENDORSEMENT;
+    uint32_t tpma_object;
+    tpma_object=TPMA_OBJECT_FIXEDTPM |
+				        TPMA_OBJECT_FIXEDPARENT |
+    			        TPMA_OBJECT_SENSITIVEDATAORIGIN |
+				        TPMA_OBJECT_USERWITHAUTH |
+                        TPMA_OBJECT_RESTRICTED |
+                        TPMA_OBJECT_NODA |
+				        TPMA_OBJECT_DECRYPT;
+    in.primaryHandle=hierarchy;
     in.inSensitive.sensitive.userAuth.t.size = 0;
     in.inSensitive.sensitive.data.t.size = 0;
 
+    in.outsideInfo.t.size = 0;
+    in.creationPCR.count = 0;
     // construct the template using the default IWG template 
     TPMT_PUBLIC& tpmt_public=in.inPublic.publicArea;
     tpmt_public.type = TPM_ALG_RSA;
     tpmt_public.nameAlg = TPM_ALG_SHA256;
     
-    tpmt_public.objectAttributes.val = TPMA_OBJECT_FIXEDTPM |
-				       TPMA_OBJECT_FIXEDPARENT |
-    			       TPMA_OBJECT_SENSITIVEDATAORIGIN |
-				       TPMA_OBJECT_USERWITHAUTH |
-                       TPMA_OBJECT_RESTRICTED |
-                       TPMA_OBJECT_NODA |
-				       TPMA_OBJECT_DECRYPT;
-
-    tpmt_public.authPolicy.t.size = sizeof(iwgPolicy);
-    memcpy(tpmt_public.authPolicy.t.buffer, iwgPolicy, sizeof(iwgPolicy));
+/*    tpmt_public.objectAttributes.val = TPMA_OBJECT_FIXEDTPM |
+				        TPMA_OBJECT_FIXEDPARENT |
+    			        TPMA_OBJECT_SENSITIVEDATAORIGIN |
+				        TPMA_OBJECT_USERWITHAUTH |
+                        TPMA_OBJECT_RESTRICTED |
+                        TPMA_OBJECT_NODA |
+				        TPMA_OBJECT_DECRYPT;
+*/
+    tpmt_public.objectAttributes.val=tpma_object;
+    tpmt_public.authPolicy.t.size = iwg_policy.size();
+    memcpy(tpmt_public.authPolicy.t.buffer, &iwg_policy[0], iwg_policy.size());
 
     tpmt_public.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
     tpmt_public.parameters.rsaDetail.symmetric.keyBits.aes = aes_key_bits;
@@ -173,8 +183,6 @@ TPM_RC create_primary_rsa_ek(
     tpmt_public.parameters.rsaDetail.exponent = 0;
     tpmt_public.unique.rsa.t.size = 0;
 
-    in.outsideInfo.t.size = 0;
-    in.creationPCR.count = 0;
     rc = TSS_Execute(tss_context,
             (RESPONSE_PARAMETERS *)out,
             (COMMAND_PARAMETERS *)&in,
@@ -184,7 +192,7 @@ TPM_RC create_primary_rsa_ek(
             TPM_RH_NULL, NULL, 0);  // End of list of session 3-tuples
     if (rc != 0)
     {
-        log_ptr->os() << "create_primary_rsa_ek: " << get_tpm_error(rc) << std::endl;
+        log_ptr->os() << "create_primary_rsa_key: " << get_tpm_error(rc) << std::endl;
         throw(Tpm_error("create primary rsa key failed"));
     }
 

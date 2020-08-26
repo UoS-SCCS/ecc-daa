@@ -15,30 +15,27 @@
 #include <string>
 #include <cstring>
 #include "Marshal_public_data.h"
+#include "Ibmtss_helpers.h"
+#include "Io_utils.h"
 #include "Tpm_error.h"
 #include "Tpm_utils.h"
 
+// Can be replaced by tpm2b_to_bb, but keep this for now
 Byte_buffer ecc_param_to_bb(TPM2B_ECC_PARAMETER const& ecp)
 {
-    return Byte_buffer(ecp.t.buffer,ecp.t.size);
+    return tpm2b_to_bb(ecp);
 }
 
+// Can be replaced by bb_to_tpm2b, but keep this for now
 TPM2B_ECC_PARAMETER ecc_param_from_bb(Byte_buffer const& bb)
 {
-    TPM2B_ECC_PARAMETER ecp;    // !!!! Check how the size of this parameter is fixed
-    ecp.t.size=bb.size();
-    memcpy(ecp.t.buffer,&bb[0],bb.size());
-
-    return ecp;
+    return bb_to_tpm2b<TPM2B_ECC_PARAMETER>(bb);
 }
 
+// Can be replaced by bb_to_tpm2b, but keep this for now
 TPM2B_SENSITIVE_DATA sensitive_data_from_bb(Byte_buffer const& bb)
 {
-    TPM2B_SENSITIVE_DATA sd;    // !!!! Check how the size of this parameter is fixed
-    sd.t.size=bb.size();
-    memcpy(sd.t.buffer,&bb[0],bb.size());
-
-    return sd;
+    return bb_to_tpm2b<TPM2B_SENSITIVE_DATA>(bb);
 }
 
 Byte_buffer get_ek_from_public_data_bb(Byte_buffer const& ek_pd)
@@ -57,6 +54,7 @@ Byte_buffer get_ek_from_public_data_bb(Byte_buffer const& ek_pd)
     return get_ek_from_public_data(tpm2b_ekpd);
 }
 
+// Only for an RSA key, which is what we are using
 Byte_buffer get_ek_from_public_data(TPM2B_PUBLIC const& tpm2b_ekpd)
 {
     Byte_buffer ek_bb;
@@ -67,11 +65,12 @@ Byte_buffer get_ek_from_public_data(TPM2B_PUBLIC const& tpm2b_ekpd)
         return ek_bb;
     }
     
-    ek_bb=Byte_buffer(tpmt_public.unique.rsa.t.buffer,tpmt_public.unique.rsa.t.size);
+    ek_bb=tpm2b_to_bb(tpmt_public.unique.rsa);
 
     return ek_bb;
 }
 
+// Only for an ECC key, which is what we are using
 G1_point get_daa_key_from_public_data_bb(Byte_buffer const& daa_pd)
 {
     TPM_RC rc=0;
@@ -93,6 +92,7 @@ G1_point get_daa_key_from_public_data_bb(Byte_buffer const& daa_pd)
     return get_daa_key_from_public_data(tpm2b_daapd);
 }
 
+// Only for an ECC key, which is what we are using
 G1_point get_daa_key_from_public_data(TPM2B_PUBLIC const& tpm2b_daapd)
 {
     G1_point daa_pt;
@@ -119,26 +119,24 @@ std::ostream& os
     ECC_Parameters_In ep_in;
     ECC_Parameters_Out ep_out;
     ep_in.curveID=curve_id;
-    if (rc == 0) {
-		rc = TSS_Execute(tss_context,
-			(RESPONSE_PARAMETERS *)&ep_out,
-			(COMMAND_PARAMETERS *)&ep_in,
-			NULL,
-			TPM_CC_ECC_Parameters,
-			TPM_RH_NULL, NULL, 0);
-	}
+	rc = TSS_Execute(tss_context,
+		(RESPONSE_PARAMETERS *)&ep_out,
+		(COMMAND_PARAMETERS *)&ep_in,
+		NULL,
+		TPM_CC_ECC_Parameters,
+		TPM_RH_NULL, NULL, 0);
     if (rc!=0)
     {
         report_tpm_error(rc, "Querying ECC parameters");
     }
     else
     {
-        Byte_buffer ep_a(ep_out.parameters.a.t.buffer,ep_out.parameters.a.t.size);
-        Byte_buffer ep_b(ep_out.parameters.b.t.buffer,ep_out.parameters.b.t.size);
-        Byte_buffer ep_gX(ep_out.parameters.gX.t.buffer,ep_out.parameters.gX.t.size);
-        Byte_buffer ep_gY(ep_out.parameters.gY.t.buffer,ep_out.parameters.gY.t.size);
-        Byte_buffer ep_p(ep_out.parameters.p.t.buffer,ep_out.parameters.p.t.size);
-        Byte_buffer ep_n(ep_out.parameters.n.t.buffer,ep_out.parameters.n.t.size);
+        Byte_buffer ep_a=tpm2b_to_bb(ep_out.parameters.a);
+        Byte_buffer ep_b=tpm2b_to_bb(ep_out.parameters.b);
+        Byte_buffer ep_gX=tpm2b_to_bb(ep_out.parameters.gX);
+        Byte_buffer ep_gY=tpm2b_to_bb(ep_out.parameters.gY);
+        Byte_buffer ep_p=tpm2b_to_bb(ep_out.parameters.p);
+        Byte_buffer ep_n=tpm2b_to_bb(ep_out.parameters.n);
         os << "  a: " << ep_a.to_hex_string() << '\n';
         os << "  b: " << ep_b.to_hex_string() << '\n';
         os << " gX: " << ep_gX.to_hex_string() << '\n';
@@ -154,35 +152,6 @@ std::ostream& os
 }
 
 // Useful print routines
-void print_buffer(
-std::ostream& os,
-const uint8_t* buf,
-const size_t len,
-bool remove_leading
-)
-{
-    if (len==0)
-    {
-        os << "buffer empty";
-        return;
-    }
-    std::ios oldState(nullptr);
-	oldState.copyfmt(os);
-	os << std::setfill('0') << std::hex;
-	if (remove_leading)
-	{
-		if (buf[0]!=0)
-			os << 0+buf[0];
-	}
-	else
-		os << std::setw(2) << 0 + buf[0];
-	
-	for (int i = 1; i < len; ++i)
-		os << std::setw(2) << 0 + buf[i];	// 0 + used to force conversion to an integer for printing
-
-	os.copyfmt(oldState);
-}
-
 void print_attest_data(
 std::ostream& os,
 TPMS_ATTEST const& ad

@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 	return EXIT_SUCCESS;
 }
 
-void usage(std::ostream& os, std::string name)
+void usage(std::ostream& os, const char* name)
 {
     os << code_version << '\n';
 	os << "Usage: " << name << "\n\t-h, --help - this message\n\t-v, --version - the code version\n"
@@ -103,6 +103,7 @@ Init_result initialise(int argc, char *argv[], Program_data& pd)
         auto search=program_options.find(argv[arg++]);
         if (search==program_options.end())
         {
+            std::cerr << "Invalid option: " << argv[arg-1] << '\n';
             usage(std::cerr,argv[0]);
             return Init_result::init_failed;
         }
@@ -157,6 +158,7 @@ Init_result initialise(int argc, char *argv[], Program_data& pd)
         default:
             std::cerr << "Invalid option - " << argv[arg-1] << '\n';
             usage(std::cerr,argv[0]);
+            return Init_result::init_failed;
         }
     }
     

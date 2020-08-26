@@ -19,7 +19,7 @@
 #include <string>
 #include <cstdlib>
 #include "Tss_includes.h"
-#include "Create_primary_rsa_ek.h"
+#include "Create_primary_rsa_key.h"
 #include "Make_key_persistent.h"
 #include "Flush_context.h"
 #include "Tpm_error.h"
@@ -62,20 +62,20 @@ TPM_RC Tpm_daa::setup(Tss_setup const& tps)
         if (rc!=0)
         {
             log_ptr->os() << "Tpm_daa: setup: set_new_context : " << get_tpm_error(rc) << std::endl;
-            throw(Tpm_error("setup: failed to create a TSS context\n"));
+            throw(Tpm_error("TPM_daa: setup: failed to create a TSS context\n"));
         }
         tss_context_=nc.second;
 
         if (!check_pcr_provision(tss_context_))
         {
             log_ptr->os() << "Tpm_daa: setup: check_pcr_provision failed" << std::endl;
-            throw(Tpm_error("setup: check_pcr_provision failed\n"));            
+            throw(Tpm_error("Tpm_daa: setup: check_pcr_provision failed - provision the TPM\n"));            
         } 
 
-        if (!persistent_ek_available(tss_context_))
+        if (!persistent_key_available(tss_context_,ek_persistent_handle))
         {
-			log_ptr->os() << "Tpm_daa: seting up primary key: " << get_tpm_error(rc) << std::endl; 
-			throw(Tpm_error("Tpm_daa: setting primary key failed - provision the TPM"));
+			log_ptr->os() << "Tpm_daa: setup: seting up primary key: " << get_tpm_error(rc) << std::endl; 
+			throw(Tpm_error("Tpm_daa: setup: setting primary key failed - provision the TPM"));
 		}
 
         TPM2B_PUBLIC ek_public;
@@ -99,7 +99,7 @@ TPM_RC Tpm_daa::setup(Tss_setup const& tps)
 	catch (...)
 	{
 		rc=2;
-		last_error_="Failed - uncaught exception";
+		last_error_="Tpm_daa: setup: failed - uncaught exception";
 	}
 
 	return rc;

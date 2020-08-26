@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
-void usage(std::ostream& os, std::string name)
+void usage(std::ostream& os, const char* name)
 {
 	os << "Usage: " << name << "\n\t-h, --help - this message\n"
                     << "\t-v, --version - the code version\n"
@@ -137,6 +137,7 @@ Init_result initialise(int argc, char *argv[],Program_data& pd)
         auto search=program_options.find(argv[arg++]);
         if (search==program_options.end())
         {
+            std::cerr << "Invalid option: " << argv[arg-1] << '\n';
             usage(std::cerr,argv[0]);
             return Init_result::init_failed;
         }
@@ -162,8 +163,9 @@ Init_result initialise(int argc, char *argv[],Program_data& pd)
             usage(std::cout,argv[0]);
             return Init_result::init_help;
         default:
-            std::cerr << "Invalid option - " << argv[arg-1] << '\n';
+            std::cerr << "Invalid option: " << argv[arg-1] << '\n';
             usage(std::cerr,argv[0]);
+            return Init_result::init_failed;
         }
     }
     
@@ -380,7 +382,7 @@ Verify_result verify(Program_data& pd)
         }
 
         Bn_ctx_ptr ctx =new_bn_ctx();
-        Ec_group_ptr ecgrp=new_ec_group("BN_P256"); // Name ignored for now
+        Ec_group_ptr ecgrp=new_ec_group("bnp256"); // Name ignored for now
         if (ecgrp.get()==nullptr)
         {
             throw(Openssl_error("tes_daa_sign: error generating the curve"));
@@ -454,7 +456,7 @@ Verify_result verify(Program_data& pd)
 	return Verify_result::verify_ok;
 }
 
-bool check_key_name(Byte_buffer cert, Byte_buffer key_pd)
+bool check_key_name(Byte_buffer cert, Byte_buffer const& key_pd)
 {
     Byte_buffer k_name=get_key_name_bb(key_pd);
     if (k_name.size()==0)

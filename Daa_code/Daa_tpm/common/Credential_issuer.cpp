@@ -28,12 +28,10 @@
 #include "Amcl_pairings.h"
 #include "Tpm_defs.h"
 
-Credential_issuer::Credential_issuer()
+Credential_issuer::Credential_issuer() : sk_x_(iso_sk_x), sk_y_(iso_sk_y)
 {
     credential_key_bytes_=aes_key_bytes;
  
-	sk_x_=iso_sk_x;
-	sk_y_=iso_sk_y;
 	pk_=amcl_calculate_public_keys(std::make_pair(sk_x_,sk_y_));
 }
 
@@ -86,7 +84,7 @@ std::pair<Daa_credential,Daa_credential_signature> Credential_issuer::make_daa_c
 
     size_t random_bytes=daa_public_key.first.size();
 
-    Ec_group_ptr ecgrp=new_ec_group("BN_P256"); // Curve name ignored at the moment
+    Ec_group_ptr ecgrp=new_ec_group("bnp256"); // Curve name ignored at the moment
     if (ecgrp==NULL)
     {
         throw(Tpm_error("Error generating the BN_P256 curve"));

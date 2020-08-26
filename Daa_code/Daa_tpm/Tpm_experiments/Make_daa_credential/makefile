@@ -48,7 +48,7 @@ SRCS=Make_daa_credential.cpp \
 	Clock_utils.cpp \
 	Create_daa_key.cpp \
 	Create_ecdsa_key.cpp \
-	Create_primary_rsa_ek.cpp \
+	Create_primary_rsa_key.cpp \
 	Credential_issuer.cpp \
 	Daa_certify.cpp \
 	Daa_credential.cpp \
@@ -61,7 +61,7 @@ SRCS=Make_daa_credential.cpp \
 	Issuer_public_keys.cpp \
 	Get_random_bytes.cpp \
 	Hex_string.cpp \
-	Hmac_sha256.cpp \
+	Hmac.cpp \
 	Host.cpp \
 	KDF_sha256.cpp \
 	Key_name_from_public_data.cpp \
@@ -84,6 +84,7 @@ SRCS=Make_daa_credential.cpp \
 	Tpm_error.cpp \
 	Tpm_keys.cpp \
 	Tpm_utils.cpp \
+	Io_utils.cpp \
 	Tpm2_commit.cpp \
 	Tss_setup.cpp \
 	Tpm_initialisation.cpp \

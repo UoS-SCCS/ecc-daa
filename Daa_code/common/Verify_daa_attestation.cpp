@@ -53,7 +53,7 @@ Byte_buffer const& sig_s
         Byte_buffer hash1=sha256_bb(c+attest_hash);
 
         Bn_ctx_ptr ctx=new_bn_ctx();
-        Ec_group_ptr ecgrp=new_ec_group("BN_P256");
+        Ec_group_ptr ecgrp=new_ec_group("bnp256");
         if (ecgrp.get()==nullptr)
         {
             throw(Tpm_error("Error generating the ECC curve"));

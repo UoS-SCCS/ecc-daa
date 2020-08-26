@@ -87,7 +87,7 @@ G1_point point_from_basename(Byte_buffer const& bsn)
     G1_point map_pt;
     if (bsn.size()!=0)
     {
-        Ec_group_ptr ecgrp=new_ec_group("BN_P256");
+        Ec_group_ptr ecgrp=new_ec_group("bnp256");
         if (ecgrp==NULL)
         {
             throw(Openssl_error("Error generating the curve"));

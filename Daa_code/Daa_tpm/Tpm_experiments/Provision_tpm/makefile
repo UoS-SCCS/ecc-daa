@@ -25,7 +25,7 @@ SRCS=Provision_tpm.cpp \
 	Tss_setup.cpp \
 	Tpm_initialisation.cpp \
 	Tpm_error.cpp \
-	Create_primary_rsa_ek.cpp \
+	Create_primary_rsa_key.cpp \
 	Make_key_persistent.cpp \
 	Flush_context.cpp \
 	Sha256.cpp

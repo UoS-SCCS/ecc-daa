@@ -1,10 +1,12 @@
 /***************************************************************************
 * File:        KDF_sha256.cpp
-* Description: KDF functions using SHA256 as the hash algorithm (see
-*              TPM Specification Part 1, pg.43 and NIST SP 800-108
+* Description: TPM KDFa function using SHA256 as the hash algorithm (see
+*              TPM Specification 1.38, Part 1, pg.43 and NIST SP 800-108)
+*			   also TPM KDFe function using SHA256 (see TPM specification 1.38,
+			   Part 1, pg. 45 and NIST SP 800 56C)
 *
 * Author:      Chris Newton
-* Created:     Wednesday 30 May 2018
+* Created:     Wednesday 30 May 2018, KDFe added 11 July 2020
 *
 * (C) Copyright 2018, University of Surrey.
 *
@@ -59,7 +61,6 @@ uint32_t const size_in_bits
 {
 	size_t size_in_bytes=(size_in_bits+7)/8;
 	size_t n_hashes=std::ceil(static_cast<double>(size_in_bits)/256);
-
 	Byte_buffer result;
 	uint32_t counter=1;
 	for (int i=0;i<n_hashes;++i)
@@ -72,3 +73,25 @@ uint32_t const size_in_bits
 
 	return result.get_part(0,size_in_bytes);
 }
+
+
+Byte_buffer NIST_SP56C_sha256_fd(
+Byte_buffer const& key,
+Byte_buffer const& fixed_input,
+uint32_t const size_in_bits
+)
+{
+	size_t size_in_bytes=(size_in_bits+7)/8;
+	size_t n_hashes=std::ceil(static_cast<double>(size_in_bits)/256);
+	Byte_buffer result;
+	uint32_t counter=1;
+	for (int i=0;i<n_hashes;++i)
+	{
+		Byte_buffer hash_input=uint32_to_bb(counter)+key+fixed_input;
+		result+=sha256_bb(hash_input);
+		counter++;
+	}
+
+	return result.get_part(0,size_in_bytes);
+}
+

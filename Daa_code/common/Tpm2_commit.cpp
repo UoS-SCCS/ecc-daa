@@ -26,8 +26,6 @@ G1_point const& mapping_point
 	uint16_t counter=0;
 	Commit_points pts;
     
-	std::ostringstream oss;
-
 	Tpm_timer tt;
 
 	Commit_In commit_in;

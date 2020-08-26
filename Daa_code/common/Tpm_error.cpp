@@ -18,21 +18,21 @@
 
 std::string get_tpm_error(TPM_RC rc)
 {
-	std::ostringstream os;
+    std::ostringstream os;
     const char *msg;
-	const char *submsg;
-	const char *num;
+    const char *submsg;
+    const char *num;
 	
-	TSS_ResponseCode_toString(&msg, &submsg, &num, rc);
-	os << msg << ", " << submsg << ", " << num;
+    TSS_ResponseCode_toString(&msg, &submsg, &num, rc);
+    os << msg << ", " << submsg << ", " << num;
 
-	return os.str();
+    return os.str();
 }
 
 
 void report_tpm_error(TPM_RC rc, std::string const& comment)
 {
-	std::cout << comment << ". Returned: " << rc  << '\n';
-	std::cout << get_tpm_error(rc) << '\n';
+    std::cout << comment << ". Returned: " << rc  << '\n';
+    std::cout << get_tpm_error(rc) << '\n';
 }
 

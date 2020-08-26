@@ -17,8 +17,22 @@
 
 Ec_group_ptr new_ec_group(std::string const& curve_name)
 {
-	// Ignore the curve name for the moment
-    return Ec_group_ptr(get_ec_group_bnp256(),::EC_GROUP_free);
+    EC_GROUP* ecgrp=nullptr;
+    if (curve_name=="bnp256")
+    {
+        ecgrp=get_ec_group_bnp256();
+    }
+    else
+    {
+        int nid=OBJ_txt2nid(curve_name.c_str());
+        ecgrp=EC_GROUP_new_by_curve_name(nid);
+    }
+    if (ecgrp==nullptr)
+    {
+        throw(Openssl_error("Error generating the EC_GROUP"));
+    }
+
+    return Ec_group_ptr(ecgrp,::EC_GROUP_free);
 }
 
 Ec_key_ptr new_ec_key()

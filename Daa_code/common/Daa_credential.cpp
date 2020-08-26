@@ -24,7 +24,7 @@ std::pair<Daa_credential,Daa_credential_signature> generate_and_sign_daa_credent
 {
     size_t random_bytes=daa_key.first.size();
 
-    Ec_group_ptr ecgrp=new_ec_group("BN_P256");
+    Ec_group_ptr ecgrp=new_ec_group("bnp256");
     if (ecgrp==NULL)
     {
         throw(Tpm_error("Error generating the BN_P256 curve"));
@@ -79,7 +79,7 @@ Daa_credential randomise_daa_credential(Daa_credential const& dc, Random_byte_ge
 {
     size_t nonce_bytes=dc[0].first.size();
 
-    Ec_group_ptr ecgrp=new_ec_group("BN_P256"); // Name ignored at the moment
+    Ec_group_ptr ecgrp=new_ec_group("bnp256"); // Name ignored at the moment
     if (ecgrp==NULL)
     {
         throw(Tpm_error("Error generating the BN_P256 curve"));

@@ -48,7 +48,7 @@ SRCS=Verify_daa_signature.cpp \
 	Tss_setup.cpp \
 	Model_hashes.cpp \
 	Flush_context.cpp \
-	Hmac_sha256.cpp \
+	Hmac.cpp \
 	KDF_sha256.cpp \
 	Key_name_from_public_data.cpp \
 	Make_credential.cpp \
@@ -71,6 +71,7 @@ SRCS=Verify_daa_signature.cpp \
 	Get_random_bytes.cpp \
 	Tpm_keys.cpp \
 	Tpm_utils.cpp \
+	Io_utils.cpp \
 	Display_public_data.cpp \
 	Clock_utils.cpp \
 	Logging.cpp \

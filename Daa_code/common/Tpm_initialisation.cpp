@@ -12,26 +12,27 @@
 
 #include <iostream>
 #include <cstring>
+#include <ctime>
 #include <string>
 #include "Tss_includes.h"
 #include "Tpm_error.h"
 #include "Tpm_utils.h"
-#include "Tpm_defs.h"
 #include "Tpm_param.h"
+#include "Tpm_defs.h"
 #include "Sha.h"
-#include "Create_primary_rsa_ek.h"
+#include "Create_primary_rsa_key.h"
 #include "Make_key_persistent.h"
 #include "Flush_context.h"
 #include "Tpm_initialisation.h"
 
 TPM_RC powerup(Tss_setup const& tps)
 {
-	TPM_RC rc=0;
+    TPM_RC rc=0;
 
-	if (log_ptr->debug_level()>0)
-	{
-		log_ptr->write_to_log("powerup\n");
-	}
+    if (log_ptr->debug_level()>0)
+    {
+        log_ptr->write_to_log("powerup\n");
+    }
 
     TSS_CONTEXT* tmp_context=nullptr;   // powerup seems to leave the TSS_CONTEXT in a funny state,
                                         // so use a temporary one and then delete it.
@@ -58,56 +59,137 @@ TPM_RC powerup(Tss_setup const& tps)
         rc=rc1;
     }
 
-	return rc;
+    return rc;
 }
 
 TPM_RC startup(TSS_CONTEXT* tss_context)
 {
-	TPM_RC rc=0;
-	if (log_ptr->debug_level()>0)
-	{
-		log_ptr->write_to_log("startup\n");
-	}
+    TPM_RC rc=0;
+    if (log_ptr->debug_level()>0)
+    {
+        log_ptr->write_to_log("startup\n");
+    }
 
-	Tpm_timer tt;
+    Tpm_timer tt;
 
-	Startup_In in;
-	in.startupType = TPM_SU_CLEAR;
-	rc = TSS_Execute(tss_context,
-			NULL, 
-			(COMMAND_PARAMETERS *)&in,
-			NULL,
-			TPM_CC_Startup,
-			TPM_RH_NULL, NULL, 0);
+    Startup_In in;
+    in.startupType = TPM_SU_CLEAR;
+    rc = TSS_Execute(tss_context,
+                    NULL, 
+                    (COMMAND_PARAMETERS *)&in,
+                    NULL,
+                    TPM_CC_Startup,
+                    TPM_RH_NULL, NULL, 0);
 
-	tpm_timings.add("TPM2_startup",tt.get_duration());
+    tpm_timings.add("TPM2_startup",tt.get_duration());
 
-	return rc;
+    return rc;
 }
 
 TPM_RC shutdown(TSS_CONTEXT* tss_context)
 {
-	TPM_RC rc=0;
-	if (log_ptr->debug_level()>0)
-	{
-		log_ptr->write_to_log("shutdown\n");
-	}
+    TPM_RC rc=TPM_RC_SUCCESS;
+    if (log_ptr->debug_level()>0)
+    {
+            log_ptr->write_to_log("shutdown\n");
+    }
 
-	Tpm_timer tt;
+    Tpm_timer tt;
 
-	Shutdown_In in;
-	in.shutdownType = TPM_SU_CLEAR;
-	rc = TSS_Execute(tss_context,
-			NULL, 
-			(COMMAND_PARAMETERS *)&in,
-			NULL,
-			TPM_CC_Shutdown,
-			TPM_RH_NULL, NULL, 0);
+    Shutdown_In in;
+    in.shutdownType = TPM_SU_CLEAR;
+    rc = TSS_Execute(tss_context,
+                    NULL, 
+                    (COMMAND_PARAMETERS *)&in,
+                    NULL,
+                    TPM_CC_Shutdown,
+                    TPM_RH_NULL, NULL, 0);
 
-	tpm_timings.add("TPM2_Shutdown", tt.get_duration());
-	
-	return rc;
+    tpm_timings.add("TPM2_Shutdown", tt.get_duration());
+    
+    return rc;
 }
+
+std::pair<TPM_RC,bool> take_ownership_enabled(
+TSS_CONTEXT* tss_context
+)
+{
+    TPM_RC rc=TPM_RC_SUCCESS;
+
+    GetCapability_In in;
+    GetCapability_Out out;
+    in.capability=TPM_CAP_TPM_PROPERTIES;
+    in.property=TPM_PT_PERMANENT;
+    in.propertyCount=2;
+    rc=TSS_Execute(tss_context,
+        (RESPONSE_PARAMETERS*)&out,
+        (COMMAND_PARAMETERS*)&in,
+        NULL,
+        TPM_CC_GetCapability,
+        TPM_RH_NULL,NULL,0
+    );
+    if (rc!=TPM_RC_SUCCESS)
+    {
+        return std::make_pair(rc,false);
+    }
+
+    if (out.capabilityData.data.tpmProperties.count!=2)
+    {
+        std::cerr << "take_ownership_enabled: property count incorrect\n";
+        shutdown(tss_context);
+        exit(EXIT_FAILURE);
+    }
+    uint32_t pt_permanent=out.capabilityData.data.tpmProperties.tpmProperty[0].value;
+    uint32_t pt_startup=out.capabilityData.data.tpmProperties.tpmProperty[1].value;
+
+    std::cout << "PT_PERMANENT: " << pt_permanent << '\n';
+    std::cout << "  PT_STARTUP: " << pt_startup << '\n';
+
+    bool res=!(pt_permanent&TPMA_PERMANENT_OWNERAUTHSET);
+
+    res |= (pt_startup&TPMA_STARTUP_CLEAR_SHENABLE);
+
+    return std::make_pair(rc,res);
+}
+
+TPM_RC set_tpm_clock(TSS_CONTEXT* tss_context)
+{
+    TPM_RC rc=TPM_RC_SUCCESS;
+
+    time_t linux_time=time(NULL);
+
+    TPMI_SH_AUTH_SESSION session_handle = TPM_RS_PW;
+    unsigned int         session_attrib = 0;
+
+    return rc;
+
+/*
+    typedef struct {
+        TPMI_RH_PROVISION   auth;
+        UINT64              newTime;
+    } ClockSet_In;
+*/
+    ClockSet_In in;
+    in.newTime=1000*linux_time;
+    in.auth=TPM_RH_OWNER;
+    rc=TSS_Execute(tss_context,
+        NULL,
+        (COMMAND_PARAMETERS*)&in,
+        NULL,
+        TPM_CC_ClockSet,
+        session_handle,NULL,session_attrib,0);
+    if (rc!=0)
+    {
+        if (log_ptr->debug_level()>0)
+        {
+            log_ptr->os() << "provision_pcr: set_tpm_clock: " << get_tpm_error(rc) << std::endl;
+        }
+        throw(Tpm_error("provision_pcr: set_tpm_clock failed"));        
+    }    
+
+    return rc;
+}
+
 
 void provision_pcr(TSS_CONTEXT* tss_context)
 {
@@ -137,7 +219,7 @@ void provision_pcr(TSS_CONTEXT* tss_context)
         if (rc!=0)
         {
             if (log_ptr->debug_level()>0)
-	        {
+                {
                 log_ptr->os() << "provision_pcr: PCR_Read: " << get_tpm_error(rc) << std::endl;
             }
             throw(Tpm_error("provision_pcr: PCR_Read failed"));        
@@ -237,7 +319,7 @@ bool check_pcr_provision(TSS_CONTEXT* tss_context)
         if (rc!=0)
         {
             if (log_ptr->debug_level()>0)
-	        {
+                {
                 log_ptr->os() << "check_pcr_provision: PCR_Read: " << get_tpm_error(rc) << std::endl;
             }
             throw(Tpm_error("check_pcr_provision: PCR_Read failed"));        
@@ -279,147 +361,179 @@ bool check_pcr_provision(TSS_CONTEXT* tss_context)
     return pcr_ok;
 }
 
-bool persistent_ek_available(TSS_CONTEXT* tss_context)
+bool persistent_key_available(TSS_CONTEXT* tss_context,TPM_HANDLE handle)
 {
-	TPM_RC rc;
-	if (log_ptr->debug_level()>0)
-	{
-		log_ptr->write_to_log("persistent_ek_available\n");
-	}
+    TPM_RC rc;
+    if (log_ptr->debug_level()>0)
+    {
+            log_ptr->write_to_log("persistent_key_available\n");
+    }
 
-	bool key_available=false;
+    bool key_available=false;
 
-	Tpm_timer tt;
+    Tpm_timer tt;
 
-	GetCapability_In in;
-	GetCapability_Out out;         
-	in.capability=TPM_CAP_TPM_PROPERTIES;
-	in.property=TPM_PT_HR_PERSISTENT;
-	in.propertyCount=1;
-	rc=TSS_Execute(tss_context,
-		(RESPONSE_PARAMETERS*)&out,
-		(COMMAND_PARAMETERS*)&in,
-		NULL,
-		TPM_CC_GetCapability,
-		TPM_RH_NULL,NULL,0
-	);
-	if (rc!=0)
-	{
-		log_ptr->os() << "persistent_ek_available: " << get_tpm_error(rc) << std::endl;
-		throw(Tpm_error("GetCapability (TPM_PT_HR_PERSISTENT) failed"));        
-	}
-	tpm_timings.add("TPM2_GetCapability (TPM_PT_PERSISTENT)", tt.get_duration());
+    GetCapability_In in;
+    GetCapability_Out out;         
+    in.capability=TPM_CAP_TPM_PROPERTIES;
+    in.property=TPM_PT_HR_PERSISTENT;
+    in.propertyCount=1;
+    rc=TSS_Execute(tss_context,
+            (RESPONSE_PARAMETERS*)&out,
+            (COMMAND_PARAMETERS*)&in,
+            NULL,
+            TPM_CC_GetCapability,
+            TPM_RH_NULL,NULL,0
+    );
+    if (rc!=0)
+    {
+            log_ptr->os() << "persistent_key_available: " << get_tpm_error(rc) << std::endl;
+            throw(Tpm_error("GetCapability (TPM_PT_HR_PERSISTENT) failed"));        
+    }
+    tpm_timings.add("TPM2_GetCapability (TPM_PT_PERSISTENT)", tt.get_duration());
 
-	size_t ph_count=out.capabilityData.data.tpmProperties.tpmProperty[0].value;
-	if (ph_count!=0)
-	{
-		auto handles=retrieve_persistent_handles(tss_context,ph_count);
-		for (int i=0;i<handles.size();++i)
-		{
-			if (handles[i]==ek_persistent_handle)
-			{
-				key_available=true;
-				break;
-			}
-		}
-	}
+    size_t ph_count=out.capabilityData.data.tpmProperties.tpmProperty[0].value;
+    if (ph_count!=0)
+    {
+            auto handles=retrieve_persistent_handles(tss_context,ph_count);
+            for (int i=0;i<handles.size();++i)
+            {
+                    if (handles[i]==handle)
+                    {
+                            key_available=true;
+                            break;
+                    }
+            }
+    }
 
-	return key_available;
+    return key_available;
 }
 
 std::vector<TPM_HANDLE> retrieve_persistent_handles(TSS_CONTEXT* tss_context, size_t ph_count)
 {
-//	std::cout << "Tpm_daa::retrieve_persistent_handles " << ph_count << '\n';
-	//!!!!!!!Need to fix this for the case where there is more data
-	//!!!!!!!Not needed for VANET as we should only have one persistent handle
-	TPM_RC rc=0;
+    // std::cout << "Tpm_daa::retrieve_persistent_handles " << ph_count << '\n';
+    //!!!!!!!Need to fix this for the case where there is more data
+    //!!!!!!!Not needed for VANET as we should only have one persistent handle
+    TPM_RC rc=0;
 
-	if (log_ptr->debug_level()>0)
-	{
-		log_ptr->write_to_log("retrieve_persistent_handles\n");
-	}
+    if (log_ptr->debug_level()>0)
+    {
+            log_ptr->write_to_log("retrieve_persistent_handles\n");
+    }
 
-	std::vector<TPM_HANDLE> handles;
+    std::vector<TPM_HANDLE> handles;
 
-	Tpm_timer tt;
+    Tpm_timer tt;
 
-	GetCapability_In in;
-	GetCapability_Out out;         
-	in.capability=TPM_CAP_HANDLES;
-	in.property=TPM_HT_PERSISTENT << 24;
-	in.propertyCount=ph_count;
-	rc=TSS_Execute(tss_context,
-		(RESPONSE_PARAMETERS*)&out,
-		(COMMAND_PARAMETERS*)&in,
-		NULL,
-		TPM_CC_GetCapability,
-		TPM_RH_NULL,NULL,0
-	);
-	if (rc!=0)
-	{
-		log_ptr->os() << "retrieve_persistent_handles: " << get_tpm_error(rc) << std::endl;
-		throw(Tpm_error("Tpm_daa: GetCapability (TPM_HT_PERSISTENT) failed"));        
-	}
-	tpm_timings.add("TPM2_GetCapability (TPM_HT_PERSISTENT)",tt.get_duration());
+    GetCapability_In in;
+    GetCapability_Out out;         
+    in.capability=TPM_CAP_HANDLES;
+    in.property=TPM_HT_PERSISTENT << 24;
+    in.propertyCount=ph_count;
+    rc=TSS_Execute(tss_context,
+            (RESPONSE_PARAMETERS*)&out,
+            (COMMAND_PARAMETERS*)&in,
+            NULL,
+            TPM_CC_GetCapability,
+            TPM_RH_NULL,NULL,0
+    );
+    if (rc!=0)
+    {
+            log_ptr->os() << "retrieve_persistent_handles: " << get_tpm_error(rc) << std::endl;
+            throw(Tpm_error("Tpm_daa: GetCapability (TPM_HT_PERSISTENT) failed"));        
+    }
+    tpm_timings.add("TPM2_GetCapability (TPM_HT_PERSISTENT)",tt.get_duration());
 
-	size_t h_count=out.capabilityData.data.handles.count;
-	for (int i=0;i<h_count;++i)
-	{
-		handles.push_back(out.capabilityData.data.handles.handle[i]);
-	}
+    size_t h_count=out.capabilityData.data.handles.count;
+    for (int i=0;i<h_count;++i)
+    {
+            handles.push_back(out.capabilityData.data.handles.handle[i]);
+    }
 
-	return handles;
+    return handles;
 }
 
-void setup_primary_key(TSS_CONTEXT* tss_context)
+void setup_primary_ek(TSS_CONTEXT* tss_context)
 {
-	TPM_RC rc=0;
-	if (log_ptr->debug_level()>0)
-	{
-		log_ptr->write_to_log("setup_primary_key\n");
-	}
+    TPM_RC rc=0;
+    if (log_ptr->debug_level()>0)
+    {
+        log_ptr->write_to_log("setup_primary_ek\n");
+    }
 
-	if (!persistent_ek_available(tss_context))
-	{
-		CreatePrimary_Out out_primary;
-		rc=create_primary_rsa_ek(tss_context,&out_primary);
-		if (rc!=0)
-		{
-			log_ptr->os() << "setup_primary_key: create primary key: " << get_tpm_error(rc) << std::endl; 
-			throw(Tpm_error("setup_primary_key: creation of primary key failed"));
-		}
+    if (!persistent_key_available(tss_context,ek_persistent_handle))
+    {
+        CreatePrimary_Out out_primary;
+        rc=create_primary_rsa_key(tss_context,TPM_RH_ENDORSEMENT,&out_primary);
+        if (rc!=0)
+        {
+            log_ptr->os() << "setup_primary_ek: create primary key: " << get_tpm_error(rc) << std::endl; 
+            throw(Tpm_error("setup_primary_ek: creation of primary key failed"));
+        }
 
-		make_ek_persistent(tss_context,out_primary.objectHandle);
+        make_ek_persistent(tss_context,out_primary.objectHandle);
     }
 }
 
 void read_ek_public_data(TSS_CONTEXT* tss_context, TPM2B_PUBLIC& pd)
 {
-	TPM_RC rc=0;
-	if (log_ptr->debug_level()>0)
-	{
-		log_ptr->write_to_log("Tpm_daa: read_ek_public_data\n");
-	}
+    TPM_RC rc=0;
+    if (log_ptr->debug_level()>0)
+    {
+        log_ptr->write_to_log("Tpm_daa: read_ek_public_data\n");
+    }
 
-	Tpm_timer tt;
+    Tpm_timer tt;
 
-	ReadPublic_In in;
-	ReadPublic_Out out;
-	in.objectHandle=ek_persistent_handle;
-	rc=TSS_Execute(tss_context,
-		(RESPONSE_PARAMETERS*)&out,
-		(COMMAND_PARAMETERS*)&in,
-		NULL,
-		TPM_CC_ReadPublic,
-		TPM_RH_NULL,NULL,0
-	);
-	if (rc!=0)
-	{
-		log_ptr->os() << "read_ek_public_data: " << get_tpm_error(rc) << std::endl;
-		throw(Tpm_error("read_ek_public_data: ReadPublic failed"));        
-	}
-	tpm_timings.add("TPM2_ReadPublic",tt.get_duration());
-	pd=out.outPublic;
+    ReadPublic_In in;
+    ReadPublic_Out out;
+    in.objectHandle=ek_persistent_handle;
+    rc=TSS_Execute(tss_context,
+            (RESPONSE_PARAMETERS*)&out,
+            (COMMAND_PARAMETERS*)&in,
+            NULL,
+            TPM_CC_ReadPublic,
+            TPM_RH_NULL,NULL,0
+    );
+    if (rc!=0)
+    {
+        log_ptr->os() << "read_ek_public_data: " << get_tpm_error(rc) << std::endl;
+        throw(Tpm_error("read_ek_public_data: ReadPublic failed"));        
+    }
+    tpm_timings.add("TPM2_ReadPublic",tt.get_duration());
+    pd=out.outPublic;
+}
+
+void read_persistent_key_public_data(
+TSS_CONTEXT* tss_context,
+TPM_HANDLE handle,
+TPM2B_PUBLIC& pd)
+{
+    TPM_RC rc=0;
+    if (log_ptr->debug_level()>0)
+    {
+        log_ptr->write_to_log("Tpm_daa: read_persistent_key_public_data\n");
+    }
+
+    Tpm_timer tt;
+
+    ReadPublic_In in;
+    ReadPublic_Out out;
+    in.objectHandle=handle;
+    rc=TSS_Execute(tss_context,
+            (RESPONSE_PARAMETERS*)&out,
+            (COMMAND_PARAMETERS*)&in,
+            NULL,
+            TPM_CC_ReadPublic,
+            TPM_RH_NULL,NULL,0
+    );
+    if (rc!=0)
+    {
+        log_ptr->os() << "read_persistent_key_public_data: " << get_tpm_error(rc) << std::endl;
+        throw(Tpm_error("read_persistent_key_public_data: ReadPublic failed"));        
+    }
+    tpm_timings.add("TPM2_ReadPublic",tt.get_duration());
+    pd=out.outPublic;
 }
 
 TPM_RC make_ek_persistent(
@@ -427,35 +541,35 @@ TSS_CONTEXT* tss_context,
 TPM_HANDLE ek_handle
 )
 {
-	TPM_RC rc=0;
-	if (log_ptr->debug_level()>0)
-	{
-		log_ptr->write_to_log("Tpm_daa: make_ek_persistent\n");
-	}
+    TPM_RC rc=0;
+    if (log_ptr->debug_level()>0)
+    {
+        log_ptr->write_to_log("Tpm_daa: make_ek_persistent\n");
+    }
 
     rc=make_key_persistent(tss_context,TPM_RH_OWNER,ek_handle,ek_persistent_handle);
-	if (rc==TPM_RC_NV_DEFINED)
-	{
-		TPM_RC rc1=remove_persistent_key(tss_context,TPM_RH_OWNER,ek_persistent_handle);
-		if (rc1==0) 
-		{
-			rc=make_key_persistent(tss_context,TPM_RH_OWNER,ek_handle,ek_persistent_handle);
-		}
-	}
-	if (rc!=0)
-	{
-		log_ptr->os() << "make_ek_persistent: " << get_tpm_error(rc) << std::endl;
-		throw(Tpm_error("Unable to make the endorsement key persistent"));
-	}
-	
-	rc=flush_context(tss_context,ek_handle);
-	if (rc!=0)
-	{
-		log_ptr->os() << "make_ek_persistent: flush_context:" << get_tpm_error(rc) << std::endl;
-		throw(Tpm_error("Unable to flush the primary key"));
-	}
+    if (rc==TPM_RC_NV_DEFINED)
+    {
+        TPM_RC rc1=remove_persistent_key(tss_context,TPM_RH_OWNER,ek_persistent_handle);
+        if (rc1==0) 
+        {
+            rc=make_key_persistent(tss_context,TPM_RH_OWNER,ek_handle,ek_persistent_handle);
+        }
+    }
+    if (rc!=0)
+    {
+        log_ptr->os() << "make_ek_persistent: " << get_tpm_error(rc) << std::endl;
+        throw(Tpm_error("Unable to make the endorsement key persistent"));
+    }
+    
+    rc=flush_context(tss_context,ek_handle);
+    if (rc!=0)
+    {
+        log_ptr->os() << "make_ek_persistent: flush_context:" << get_tpm_error(rc) << std::endl;
+        throw(Tpm_error("Unable to flush the primary key"));
+    }
 
-	return rc;
+    return rc;
 }
 
 

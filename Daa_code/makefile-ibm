@@ -1,5 +1,5 @@
 # =============================================================================
-#  Makefile setting paths and flags for VANT_experiments test programs
+#  Makefile setting paths and flags for Experiments test programs
 # =============================================================================
 
 UTILS_ROOT=../../../Utilities

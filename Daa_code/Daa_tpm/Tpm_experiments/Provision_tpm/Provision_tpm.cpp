@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
         auto search=program_options.find(argv[arg++]);
         if (search==program_options.end())
         {
+            std::cerr << "Invalid option: " << argv[arg-1] << '\n';
             usage(std::cerr,argv[0]);
             return EXIT_FAILURE;
         }
@@ -96,8 +97,9 @@ int main(int argc, char *argv[])
             std::cout << code_version << '\n';
             return EXIT_SUCCESS;
         default:
-            std::cerr << "Invalid option - " << argv[arg-1] << '\n';
+            std::cerr << "Invalid option: " << argv[arg-1] << '\n';
             usage(std::cerr,argv[0]);
+            return EXIT_FAILURE;
         }
     }
 
@@ -161,7 +163,7 @@ int main(int argc, char *argv[])
 
         provision_pcr(tss_context);
 
-        setup_primary_key(tss_context);
+        setup_primary_ek(tss_context);
 	}
 	catch (Tpm_error &e)
 	{
@@ -179,10 +181,11 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
-void usage(std::ostream& os, std::string name)
+void usage(std::ostream& os, const char* name)
 {
 	os << "Usage: " << name << "\n\t-h, --help - this message\n"
                     << "\t-v, --version - the code version\n"
-                    << "\t-t, --tpm - use the TPM device\n\t-s, --sim - use the TPM simulator (default)\n"
+                    << "\t-t, --tpm - use the TPM device\n"
+                    << "\t-s, --sim - use the TPM simulator (default)\n"
                     <<  "\t-g, --debug <debug level> - (0,1,2)\n";
 }

@@ -46,7 +46,7 @@ Daa_credential_signature const& sig
     try
     {
         Bn_ctx_ptr ctx =new_bn_ctx();
-        Ec_group_ptr ecgrp=new_ec_group("BN_P256"); // Curve name ignored for the moment
+        Ec_group_ptr ecgrp=new_ec_group("bnp256"); // Curve name ignored for the moment
         if (ecgrp.get()==nullptr)
         {
             throw(Tpm_error("verify_daa_credential_signature: error generating the curve"));

@@ -268,7 +268,7 @@ std::string const& key_name
     return pos->handle;
 }
 
-Vanet_key_manager::Vanet_key_iterator Vanet_key_manager::get_key(std::string v_name)
+Vanet_key_manager::Vanet_key_iterator Vanet_key_manager::get_key(std::string const& v_name)
 {
     Vanet_key_iterator pos;
     for (pos=keys_.begin();pos!=keys_.cend();++pos)
@@ -279,7 +279,7 @@ Vanet_key_manager::Vanet_key_iterator Vanet_key_manager::get_key(std::string v_n
     return pos;
 }
 
-Vanet_key_manager::Vanet_key_const_iterator Vanet_key_manager::get_key(std::string v_name) const
+Vanet_key_manager::Vanet_key_const_iterator Vanet_key_manager::get_key(std::string const& v_name) const
 {
     Vanet_key_const_iterator pos;
     for (pos=keys_.begin();pos!=keys_.cend();++pos)

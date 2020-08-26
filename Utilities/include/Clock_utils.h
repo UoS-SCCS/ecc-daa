@@ -1,27 +1,14 @@
 /*******************************************************************************
-* File:        Clock_utils.h
-* Description: Utilities for using chrono for dates, times and timing
-*
-* Author:      Chris Newton
-* Created:     Monday 8 October 2018
-*
-* (C) Copyright 2018
-*
-*******************************************************************************/
-
-/*******************************************************************************
 *                                                                              *
-* (C) Copyright 2019 University of Surrey                                      *
+* Implementation and Formal Verification of a Direct Anonymous Attestation     *
+* ========================================================================     *
+* Scheme using TPM 2.0                                                         *
+* ====================                                                         *
 *                                                                              *
-* Redistribution and use in source and binary forms, with or without           *
-* modification, are permitted provided that the following conditions are met:  *
-*                                                                              *
-* 1. Redistributions of source code must retain the above copyright notice,    *
-* this list of conditions and the following disclaimer.                        *
-*                                                                              *
-* 2. Redistributions in binary form must reproduce the above copyright notice, *
-* this list of conditions and the following disclaimer in the documentation    *
-* and/or other materials provided with the distribution.                       *
+* This code has been anonymised and is provided solely to aid the review of    *
+* the article titled above. It should not be redistributed in source or binary *
+* form, with or without, modification. A BSD licensed version of the code will *
+* be made availble in due course.                                              *
 *                                                                              *
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"  *
 * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE    *
@@ -37,6 +24,14 @@
 *                                                                              *
 *******************************************************************************/
 
+/**********************************************************************
+* File:        Clock_utils.h
+* Description: Utilities for using chrono for dates, times and timing
+*
+* Created:     Monday 8 October 2018
+*
+*
+**********************************************************************/
 
 #pragma once
 
@@ -79,7 +74,7 @@ class Timing_data
 {
 public:
     Timing_data()=delete;
-    Timing_data(std::string str,Rep t) : label_(str), time_(t) {}
+    Timing_data(std::string const& str,Rep t) : label_(str), time_(t) {}
     Timing_data(Timing_data const& td)=default;
     Timing_data(Timing_data&&)=default;
     std::string label() const {return label_;}
@@ -124,7 +119,7 @@ template<typename Rep>
 void Timings<Rep>::write_tpm_timings(std::ostream& os) const
 {
     auto prec=os.precision();
-    os << std::setprecision(8); // Large enough for (almost) all timings
+    os << '\n' << std::setprecision(8); // Large enough for (almost) all timings
                                         // to be output as fixed
     for(auto td : timings_)
     {

@@ -27,8 +27,6 @@ TPM_HANDLE daa_key_handle
 	uint16_t counter=0;
 	G1_point u_pt;
 
-	std::ostringstream oss;
-
 	Tpm_timer tt;
 
 	Commit_In in;
@@ -74,8 +72,6 @@ Byte_buffer const& p
 	TPM_RC rc=0;
 	Byte_buffer k;
 	Byte_buffer w;
-
-	std::ostringstream oss;
 
 	Tpm_timer tt;
 

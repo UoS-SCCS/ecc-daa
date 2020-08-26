@@ -31,15 +31,10 @@ typedef struct {
 } EvictControl_In;
 */
 
-    if (rc == 0)
-    {
-        in.auth = auth;
-        in.objectHandle = key_handle;
-        in.persistentHandle = persistent_handle;
-    }
+    in.auth = auth;
+    in.objectHandle = key_handle;
+    in.persistentHandle = persistent_handle;
     /* call TSS to execute the command */
-    if (rc == 0)
-    {
         rc = TSS_Execute(tssContext,
                          NULL, 
                          (COMMAND_PARAMETERS *)&in,
@@ -51,7 +46,7 @@ typedef struct {
         {            
             report_tpm_error(rc, "ERROR: evictcontrol: failed");
         }
-    }
+
     return rc;
 }
 

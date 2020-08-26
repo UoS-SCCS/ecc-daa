@@ -42,7 +42,7 @@ LDLIBS=$(LDLIBS_COMMON) -lssl -lcrypto $(AMCL_DIR)/amcl.a
 
 TARGET=daa_certify_key
 SRCS=Daa_certify_key.cpp \
-	Create_primary_rsa_ek.cpp \
+	Create_primary_rsa_key.cpp \
 	Byte_buffer.cpp \
 	Hex_string.cpp \
 	Create_daa_key.cpp \
@@ -54,7 +54,7 @@ SRCS=Daa_certify_key.cpp \
 	Model_hashes.cpp \
 	Tpm2_commit.cpp \
 	Flush_context.cpp \
-	Hmac_sha256.cpp \
+	Hmac.cpp \
 	KDF_sha256.cpp \
 	Key_name_from_public_data.cpp \
 	Make_credential.cpp \
@@ -76,6 +76,7 @@ SRCS=Daa_certify_key.cpp \
 	Get_random_bytes.cpp \
 	Tpm_keys.cpp \
 	Tpm_utils.cpp \
+	Io_utils.cpp \
 	Host.cpp \
 	Credential_issuer.cpp \
 	Display_public_data.cpp \

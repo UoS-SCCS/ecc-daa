@@ -5,7 +5,6 @@
 $(info Compiling with $(CXX))
 
 all:
-	make -s -C ./Provision_tpm	
 	make -s -C ./Make_daa_credential	
 	make -s -C ./Daa_sign_message
 	make -s -C ./Daa_certify_key
@@ -16,7 +15,6 @@ all:
 #	./runTests
 
 clean:
-	@make clean -s -C ./Provision_tpm	
 	@make clean -s -C ./Make_daa_credential
 	@make clean -s -C ./Daa_sign_message
 	@make clean -s -C ./Daa_certify_key

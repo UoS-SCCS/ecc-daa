@@ -13,7 +13,7 @@
 #include "Tpm_param.h"
 #include "Daa_signatures.h"
 
-void usage(std::ostream& os, std::string name)
+void usage(std::ostream& os, const char* name)
 {
     os << code_version << '\n';
 	os << "Usage: " << name << "\n\t-h, --help - this message\n"
@@ -23,7 +23,7 @@ void usage(std::ostream& os, std::string name)
                     << "\t<credential filename>\n";
 }
 
-Init_result initialise(int argc, char *argv[], std::string type, Program_data& pd)
+Init_result initialise(int argc, char *argv[], std::string const& type, Program_data& pd)
 {
     if (argc<2)
     {
@@ -86,6 +86,7 @@ Init_result initialise(int argc, char *argv[], std::string type, Program_data& p
         auto search=program_options.find(argv[arg++]);
         if (search==program_options.end())
         {
+            std::cerr << "Invalid option: " << argv[arg-1] << '\n';
             usage(std::cerr,argv[0]);
             return Init_result::init_failed;
         }
@@ -138,8 +139,9 @@ Init_result initialise(int argc, char *argv[], std::string type, Program_data& p
             std::cout << code_version << '\n';
             return Init_result::init_help;
         default:
-            std::cerr << "Invalid option - " << argv[arg-1] << '\n';
+            std::cerr << "Invalid option: " << argv[arg-1] << '\n';
             usage(std::cerr,argv[0]);
+            return Init_result::init_failed;
         }
     }
     

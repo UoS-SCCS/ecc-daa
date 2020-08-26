@@ -27,7 +27,6 @@ Byte_buffer const& qd
 {
 	Certify_data cert;
 
-	std::ostringstream oss;
 	Tpm_timer tt;
 
 	Certify_In cert_in;
