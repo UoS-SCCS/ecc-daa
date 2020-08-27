@@ -1,14 +1,25 @@
 /*******************************************************************************
+* File:        Logging.h
+* Description: Routines for logging errors and data
+*
+* Created:     Monday 15 October 2018
+*
+*
+*******************************************************************************/
+
+/*******************************************************************************
 *                                                                              *
-* Implementation and Formal Verification of a Direct Anonymous Attestation     *
-* ========================================================================     *
-* Scheme using TPM 2.0                                                         *
-* ====================                                                         *
+* (C) Copyright 2019 University of Surrey                                      *
 *                                                                              *
-* This code has been anonymised and is provided solely to aid the review of    *
-* the article titled above. It should not be redistributed in source or binary *
-* form, with or without, modification. A BSD licensed version of the code will *
-* be made availble in due course.                                              *
+* Redistribution and use in source and binary forms, with or without           *
+* modification, are permitted provided that the following conditions are met:  *
+*                                                                              *
+* 1. Redistributions of source code must retain the above copyright notice,    *
+* this list of conditions and the following disclaimer.                        *
+*                                                                              *
+* 2. Redistributions in binary form must reproduce the above copyright notice, *
+* this list of conditions and the following disclaimer in the documentation    *
+* and/or other materials provided with the distribution.                       *
 *                                                                              *
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"  *
 * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE    *
@@ -24,14 +35,6 @@
 *                                                                              *
 *******************************************************************************/
 
-/**********************************************************************
-* File:        Logging.h
-* Description: Routines for logging errors and data
-*
-* Created:     Monday 15 October 2018
-*
-*
-**********************************************************************/
 
 #pragma once
 
