@@ -114,7 +114,7 @@ void usage(std::ostream& os, const char* name)
 {
     os << code_version << '\n';
 	os << "Usage: " << name << "\n\t-h, --help - this message\n\t-v, --version - the code version\n"
-                    << "\t-t, --dev - use the TPM device\n\t-s, --sim - use the TPM simulator (default)\n"
+                    << "\t-t, --dev - use the TPM device\n\t-s, --sim - use the TPM simulator\n"
                     <<  "\t-g, --debug <debug level> - (0,1,2)\n\t-d, --datadir <data directory> - (default .)\n";
 }
 
@@ -191,16 +191,18 @@ Init_result initialise(int argc, char *argv[], Program_data& pd)
         }
     }
     
-    if (device=="null") //  then use default
-    {
-        device="S";
+    if (device=="S") {
         pd.sp.reset(new Simulator_setup);
         pd.sp->data_dir.value=Tss_option::sim_data_dir.value;
     }
-	else
-	{
+	else if (device=="T") {	// On the Raspberry Pi
         pd.sp.reset(new Device_setup);
         pd.sp->data_dir.value=Tss_option::pi_data_dir.value;
+	}
+	else {
+		std::cerr << "A device must be selected\n";
+        usage(std::cerr,argv[0]);
+		return Init_result::init_failed;
 	}
 
     pd.file_basename+="/Daa_"+device+"_cre_";

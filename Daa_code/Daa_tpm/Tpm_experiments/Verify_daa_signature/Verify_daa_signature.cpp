@@ -106,11 +106,14 @@ int main(int argc, char *argv[])
 	
 	if (vr==Verify_result::verify_failed)
     {
+		log_ptr->os() << "Signatugre verification failed\n";
        	return EXIT_FAILURE;
 
     }
 
     tpm_timings.write_tpm_timings(log_ptr->os());
+
+	log_ptr->os() << "Signature verified OK\n";
 
     return EXIT_SUCCESS;
 }

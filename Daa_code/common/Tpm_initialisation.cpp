@@ -321,6 +321,8 @@ void provision_pcr(TSS_CONTEXT* tss_context)
 
 bool check_pcr_provision(TSS_CONTEXT* tss_context)
 {
+    log_ptr->os() << "check_pcr_provision: called\n";
+
     bool pcr_ok=true;
     TPM_RC rc;
     try
@@ -347,8 +349,7 @@ bool check_pcr_provision(TSS_CONTEXT* tss_context)
         );
         if (rc!=0)
         {
-            if (log_ptr->debug_level()>0)
-                {
+            if (log_ptr->debug_level()>0) {
                 log_ptr->os() << "check_pcr_provision: PCR_Read: " << get_tpm_error(rc) << std::endl;
             }
             throw(Tpm_error("check_pcr_provision: PCR_Read failed"));        
@@ -386,6 +387,8 @@ bool check_pcr_provision(TSS_CONTEXT* tss_context)
     {
        return false;
     }
+
+    log_ptr->os() << "check_pcr_provision: ccompleted\n";
 
     return pcr_ok;
 }
